@@ -44,8 +44,8 @@ async def check_to_pump(session, pair):
                 if percent > 5:
                     pump_params = {
                         "currency": pair,
-                        "open": f"{open:.20f}".rstrip("0").rstrip("."),
-                        "close": f"{close:.20f}".rstrip("0").rstrip("."),
+                        "open": open,
+                        "close": close,
                         "percent": round(percent, 2),
                     }
                     await bot_notify(pump_params)
