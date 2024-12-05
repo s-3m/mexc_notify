@@ -9,7 +9,7 @@ from loguru import logger
 
 BASE_URL = "https://contract.mexc.com"
 
-semaphore = asyncio.Semaphore(120)
+semaphore = asyncio.Semaphore(60)
 unique_pair = set()
 load_dotenv(".env")
 bot_token = os.getenv("BOT_TOKEN")
