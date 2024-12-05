@@ -5,6 +5,7 @@ import datetime
 import aiohttp
 from aiogram import Bot
 from dotenv import load_dotenv
+from loguru import logger
 
 BASE_URL = "https://contract.mexc.com"
 
@@ -33,28 +34,34 @@ async def check_to_pump(session, pair):
                 "start": int(start.timestamp()),
                 "end": int(end.timestamp()),
             }
-            async with session.get(f"{BASE_URL}/api/v1/contract/kline/{pair}", params=param) as resp:
-                data = await resp.json()
+            try:
+                async with session.get(f"{BASE_URL}/api/v1/contract/kline/{pair}", params=param) as resp:
+                    data = await resp.json()
 
-                open: float = data["data"]["open"][0]
-                close: float = data["data"]["close"][0]
+                    open: float = data["data"]["open"][0]
+                    close: float = data["data"]["close"][0]
 
-                percent: float = 100 * (close - open) / open
+                    percent: float = 100 * (close - open) / open
 
-                if percent > 5:
-                    pump_params = {
-                        "currency": pair,
-                        "open": open,
-                        "close": close,
-                        "percent": round(percent, 2),
-                    }
-                    await bot_notify(pump_params)
-                    await asyncio.sleep(600)
-                else:
-                    await asyncio.sleep(60)
+                    if percent > 5:
+                        logger.success("find PUMP. Data was send")
+                        pump_params = {
+                            "currency": pair,
+                            "open": open,
+                            "close": close,
+                            "percent": round(percent, 2),
+                        }
+                        await bot_notify(pump_params)
+                        await asyncio.sleep(600)
+                    else:
+                        await asyncio.sleep(60)
+            except Exception as e:
+                logger.exception("Error find")
+                await asyncio.sleep(60)
 
 
 async def main():
+    logger.info("Start parse mexc")
     async with aiohttp.ClientSession() as session:
         async with session.get(f"{BASE_URL}/api/v1/contract/detail") as response:
             data = await response.json()
