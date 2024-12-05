@@ -9,7 +9,7 @@ from loguru import logger
 
 BASE_URL = "https://contract.mexc.com"
 
-semaphore = asyncio.Semaphore(650)
+semaphore = asyncio.Semaphore(120)
 unique_pair = set()
 load_dotenv(".env")
 bot_token = os.getenv("BOT_TOKEN")
@@ -43,17 +43,20 @@ async def check_to_pump(session, pair):
 
                     percent: float = 100 * (close - open) / open
 
-                    if percent > 5:
+                    if percent > 3:
                         logger.success("find PUMP. Data was send")
                         pump_params = {
                             "currency": pair,
-                            "open": open,
-                            "close": close,
+                            "open": f"{open:.20f}".rstrip("0").rstrip("."),
+                            "close": f"{close:.20f}".rstrip("0").rstrip("."),
                             "percent": round(percent, 2),
                         }
                         await bot_notify(pump_params)
                         await asyncio.sleep(600)
                     else:
+                        print(f"\r{pair} - {round(percent, 2)}%", end="")
+                        unique_pair.add(pair)
+                        print(len(unique_pair))
                         await asyncio.sleep(60)
             except Exception as e:
                 logger.exception("Error find")
