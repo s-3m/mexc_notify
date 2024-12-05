@@ -6,6 +6,7 @@ import aiohttp
 from aiogram import Bot
 from dotenv import load_dotenv
 from loguru import logger
+import random
 
 BASE_URL = "https://contract.mexc.com"
 
@@ -52,12 +53,12 @@ async def check_to_pump(session, pair):
                             "percent": round(percent, 2),
                         }
                         await bot_notify(pump_params)
-                        await asyncio.sleep(600)
+                        await asyncio.sleep(300)
                     else:
                         print(f"\r{pair} - {round(percent, 2)}%", end="")
                         unique_pair.add(pair)
                         print(len(unique_pair))
-                        await asyncio.sleep(60)
+                        await asyncio.sleep(random.randint(10, 100))
             except Exception as e:
                 logger.exception("Error find")
                 await asyncio.sleep(60)
