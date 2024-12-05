@@ -13,8 +13,6 @@ unique_pair = set()
 load_dotenv(".env")
 bot_token = os.getenv("BOT_TOKEN")
 user_id = os.getenv("USER_ID")
-print(bot_token)
-print(user_id)
 
 
 async def bot_notify(data: dict):
@@ -46,8 +44,8 @@ async def check_to_pump(session, pair):
                 if percent > 5:
                     pump_params = {
                         "currency": pair,
-                        "open": open,
-                        "close": close,
+                        "open": f"{open:.20f}".rstrip("0").rstrip("."),
+                        "close": f"{close:.20f}".rstrip("0").rstrip("."),
                         "percent": round(percent, 2),
                     }
                     await bot_notify(pump_params)
