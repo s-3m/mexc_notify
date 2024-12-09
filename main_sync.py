@@ -6,6 +6,7 @@ from aiogram import Bot
 from dotenv import load_dotenv
 from loguru import logger
 import requests
+import aiohttp
 
 BASE_URL = "https://contract.mexc.com"
 
@@ -21,7 +22,7 @@ async def bot_notify(data: dict):
     await bot.session.close()
 
 
-async def check_to_pump(pair, settings):
+async def check_to_pump(session, pair, settings):
     end = datetime.datetime.now()
     start = datetime.datetime.now() - datetime.timedelta(minutes=15)
     param = {
@@ -30,8 +31,8 @@ async def check_to_pump(pair, settings):
         "end": int(end.timestamp()),
     }
     try:
-        response = requests.get(f"{BASE_URL}/api/v1/contract/kline/{pair}", params=param)
-        data = response.json()
+        async with session.get(f"{BASE_URL}/api/v1/contract/kline/{pair}", params=param) as response:
+            data = await response.json()
 
         if not data["data"]["open"]:
             return
@@ -53,7 +54,7 @@ async def check_to_pump(pair, settings):
         else:
             print(f"\rОжидаем роста...", end="")
     except Exception as e:
-        pass
+        logger.exception(e)
 
 
 def give_me_settings():
@@ -68,10 +69,11 @@ async def main():
     data = response.json()
     cur_pairs = [i["symbol"] for i in data["data"]]
     print(len(cur_pairs))
-    while True:
-        settings = give_me_settings()
-        for pair in cur_pairs:
-            await check_to_pump(pair, settings)
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit_per_host=2, limit=2)) as session:
+        while True:
+            settings = give_me_settings()
+            tasks = [asyncio.create_task(check_to_pump(session, cur_pairs, settings)) for cur_pairs in cur_pairs]
+            await asyncio.gather(*tasks)
 
 
 if __name__ == '__main__':
