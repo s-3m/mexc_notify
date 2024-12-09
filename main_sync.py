@@ -24,9 +24,9 @@ async def bot_notify(data: dict):
 
 async def check_to_pump(session, pair, settings):
     end = datetime.datetime.now()
-    start = datetime.datetime.now() - datetime.timedelta(minutes=15)
+    start = datetime.datetime.now() - datetime.timedelta(minutes=settings["duration"])
     param = {
-        "interval": settings["duration"],
+        "interval": f"Min{settings["duration"]}",
         "start": int(start.timestamp()),
         "end": int(end.timestamp()),
     }
