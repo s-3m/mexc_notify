@@ -1,0 +1,8 @@
+{
+  "settings":
+          {
+            "__comment": "В поле duration вы можете устанавливать тоько следующие значения - Min10, Min15, Min30",
+            "duration": "Min15",
+            "percent": 15
+          }
+}

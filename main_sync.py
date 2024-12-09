@@ -1,5 +1,6 @@
 import asyncio
 import os
+import json
 import datetime
 from aiogram import Bot
 from dotenv import load_dotenv
@@ -20,11 +21,11 @@ async def bot_notify(data: dict):
     await bot.session.close()
 
 
-async def check_to_pump(pair):
+async def check_to_pump(pair, settings):
     end = datetime.datetime.now()
     start = datetime.datetime.now() - datetime.timedelta(minutes=15)
     param = {
-        "interval": "Min15",
+        "interval": settings["duration"],
         "start": int(start.timestamp()),
         "end": int(end.timestamp()),
     }
@@ -40,7 +41,7 @@ async def check_to_pump(pair):
 
         percent: float = 100 * (close_price - open_price) / open_price
 
-        if percent >= 8:
+        if percent >= settings["percent"]:
             logger.success("Find PUMP. Data was send")
             pump_params = {
                 "currency": pair,
@@ -55,6 +56,12 @@ async def check_to_pump(pair):
         pass
 
 
+def give_me_settings():
+    with open("settings.json", "r") as f:
+        settings = json.load(f)
+    return settings["settings"]
+
+
 async def main():
     logger.info("Start parse mexc")
     response = requests.get(f"{BASE_URL}/api/v1/contract/detail")
@@ -62,8 +69,9 @@ async def main():
     cur_pairs = [i["symbol"] for i in data["data"]]
     print(len(cur_pairs))
     while True:
+        settings = give_me_settings()
         for pair in cur_pairs:
-            await check_to_pump(pair)
+            await check_to_pump(pair, settings)
 
 
 if __name__ == '__main__':
