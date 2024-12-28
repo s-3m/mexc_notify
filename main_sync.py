@@ -2,6 +2,7 @@ import asyncio
 import os
 import json
 import datetime
+import time
 from aiogram import Bot
 from dotenv import load_dotenv
 from loguru import logger
@@ -52,7 +53,7 @@ async def check_to_pump(session, pair, settings):
             }
             await bot_notify(pump_params)
         else:
-            print(f"\rОжидаем роста...", end="")
+            print(f"\rОжидаем роста...{pair}", end="")
     except Exception as e:
         logger.exception(e)
 
@@ -69,13 +70,14 @@ async def main():
     data = response.json()
     cur_pairs = [i["symbol"] for i in data["data"]]
     print(len(cur_pairs))
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit_per_host=2, limit=2)) as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit_per_host=2, ssl=False)) as session:
         while True:
+            t = time.time()
             settings = give_me_settings()
             tasks = [asyncio.create_task(check_to_pump(session, cur_pairs, settings)) for cur_pairs in cur_pairs]
             await asyncio.gather(*tasks)
+            print(time.time() - t)
 
 
 if __name__ == '__main__':
     asyncio.run(main())
-

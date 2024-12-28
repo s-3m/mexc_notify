@@ -2,7 +2,7 @@
   "settings":
           {
             "__comment": "В поле duration вы можете устанавливать только следующие значения - 1, 5, 15, 30, 60",
-            "duration": 5,
-            "percent": 15
+            "duration": 15,
+            "percent": 10
           }
 }
