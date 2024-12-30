@@ -72,11 +72,9 @@ async def main():
     print(len(cur_pairs))
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit_per_host=2, ssl=False)) as session:
         while True:
-            t = time.time()
             settings = give_me_settings()
             tasks = [asyncio.create_task(check_to_pump(session, cur_pairs, settings)) for cur_pairs in cur_pairs]
             await asyncio.gather(*tasks)
-            print(time.time() - t)
 
 
 if __name__ == '__main__':
